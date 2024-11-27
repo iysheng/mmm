@@ -127,23 +127,15 @@ int main (int argc, char **argv)
   if (!pixels)
     return -1;
 
+  // TODO create new thread
   int ret;
   ret = pthread_create(&gs_guilite_pt, NULL, guilite_entry, pixels);
-
-  int frame;
-  int val = 0;
-  int dir = 1;
-
-  void                *res;
   pthread_detach(&gs_guilite_pt);
-  // TODO create new thread
-  //
-  for (frame = 0; frame < 100000; frame ++)
-  {
-    int x, y;
-    int i;
-    wait_sync ();
 
+  // update fb
+  while(1)
+  {
+    wait_sync ();
     flip_buffer();
   }
 
