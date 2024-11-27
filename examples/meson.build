@@ -7,7 +7,7 @@ examples = [
  { 'name': 'fragment-400x300', },
  { 'name': 'fragment-full', },
  { 'name': 'nano-test2', },
- { 'name': 'raw-client', },
+ # { 'name': 'raw-client', },
  { 'name': 'raw-client-tool', },
 ]
 
@@ -25,3 +25,8 @@ foreach example : examples
 
 
 endforeach
+
+executable('wave', 'raw-client.c', 'UIcode/resource/Lucida_Console_27.cpp', 'UIcode/UIcode.cpp', 'UIcode/GuiLite.h', 
+include_directories : [mmmInclude,],
+link_with: [ mmm_lib ],
+install : false,)

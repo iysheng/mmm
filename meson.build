@@ -1,5 +1,5 @@
 
-project('mmm', 'c',
+project('mmm', 'cpp', 'c',
   license: 'MIT',
   version: '0.1.1',
   meson_version: '>=0.50.0',
@@ -9,6 +9,7 @@ project('mmm', 'c',
 conf = configuration_data()
 pkgconfig = import('pkgconfig')
 
+cxx       = meson.get_compiler('cpp')
 cc        = meson.get_compiler('c')
 prefix    = get_option('prefix')
 
@@ -34,8 +35,8 @@ stable = (stability_version_number % 2 == 0)
 stability_version_number = (major_version != 0 ? minor_version : micro_version)
 stable = (stability_version_number % 2 == 0)
 
-conf.set10('MMM_UNSTABLE', not stable, Description:
-  'Define to 1 if this is an unstable version of MMM.')
+# conf.set10('MMM_UNSTABLE', not stable, Description:
+  # 'Define to 1 if this is an unstable version of MMM.')
 
 conf.set       ('MMM_MAJOR_VERSION',    '@0@'.format(major_version))
 conf.set       ('MMM_MINOR_VERSION',    '@0@'.format(minor_version))

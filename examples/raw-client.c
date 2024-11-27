@@ -12,8 +12,8 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
-#define WIDTH               512
-#define HEIGHT              384
+#define WIDTH               800
+#define HEIGHT              480
 #define BPP                 4
 
 #define MMM_PID             0x18
@@ -45,7 +45,7 @@ static uint8_t *ram_base  = NULL;
 
 static uint8_t *pico_fb (int width, int height)
 {
-  char path[512];
+  char path[800];
   int fd;
   int size = MMM_SIZE + width * height * BPP;
   const char *mmm_path = getenv ("MMM_PATH");
@@ -62,7 +62,7 @@ static uint8_t *pico_fb (int width, int height)
   chmod (path, 511);
   ram_base = mmap (NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   memset (ram_base, 0, size);
-  strcpy ((void*)ram_base + MMM_TITLE, "foo");
+  strcpy ((void*)ram_base + MMM_TITLE, "MMM");
 
   POKE (MMM_FLIP_STATE,  MMM_FLIP_INIT);
   POKE (MMM_PID,         (uint32_t)getpid());
@@ -106,45 +106,45 @@ static void flip_buffer (void)
   POKE (MMM_FLIP_STATE, MMM_FLIP_WAIT_FLIP);
 }
 
+#include <pthread.h>
+
+static pthread_t gs_guilite_pt;
+
+extern void startHelloWave(void* phy_fb, int width, int height, int color_bytes);
+
+void * guilite_entry(void *parg)
+{
+  startHelloWave(parg, 800, 480, 4);
+  
+  return 0;
+}
+
 int main (int argc, char **argv)
 {
-  uint8_t *pixels = pico_fb (512, 384);
+  // 默认是 ARGB format
+  uint8_t *pixels = pico_fb (800, 480);
 
   if (!pixels)
     return -1;
+
+  int ret;
+  ret = pthread_create(&gs_guilite_pt, NULL, guilite_entry, pixels);
 
   int frame;
   int val = 0;
   int dir = 1;
 
+  void                *res;
+  pthread_detach(&gs_guilite_pt);
+  // TODO create new thread
+  //
   for (frame = 0; frame < 100000; frame ++)
   {
     int x, y;
     int i;
-
     wait_sync ();
 
-    i = 0;
-    for (y = 0 ; y < HEIGHT; y ++)
-      for (x = 0; x < WIDTH; x ++)
-      {
-        float d = (x - WIDTH/2) * (x - WIDTH / 2) +
-                  (y - HEIGHT/2) * (y - HEIGHT / 2);
-        pixels[i + 0] = (x & y) + frame;
-        pixels[i + 1] = val;
-        pixels[i + 2] = (x - WIDTH/2) * frame / ((y-HEIGHT/2)+0.5);
-        pixels[i + 3] = d * 800 / frame;
-        i += 4;
-      }
-
-    flip_buffer ();
-
-    val += dir;
-    if (val >= 255 || val < 0)
-    {
-      dir *= -1;
-      val += dir;
-    }
+    flip_buffer();
   }
 
   pico_exit ();
