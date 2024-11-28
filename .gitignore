@@ -4,3 +4,4 @@
 symbols
 .cache/
 compile_commands.json
+*.orig
