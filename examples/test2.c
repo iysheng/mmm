@@ -2,11 +2,41 @@
  */
 #include "mmm.h"
 #include <stdio.h>
+#include <signal.h>
+
+#include <stdlib.h>
+#include <unistd.h>
+#include <pthread.h>
+static pthread_t gs_guilite_pt;
+
+extern void startHelloWave(void* phy_fb, int width, int height, int color_bytes);
+
+void * guilite_entry(void *parg)
+{
+  startHelloWave(parg, 800, 480, 4);
+  return NULL;
+}
+
+       void
+       handler(int signo, siginfo_t *info, void *context)
+       {
+           struct sigaction oldact;
+
+           printf("signo=%d\n", signo);
+       }
 
 int main ()
 {
   int frame = 1024;
-  Mmm *fb = mmm_new (800, 600, 0, NULL);
+  Mmm *fb = mmm_new (800, 480, 0, NULL);
+
+           struct sigaction act = { 0 };
+
+           act.sa_flags = SA_SIGINFO;
+           act.sa_sigaction = &handler;
+           if (sigaction(SIGSEGV, &act, NULL) == -1) {
+               perror("sigaction");
+           }
 
   if (!fb)
     {
@@ -14,9 +44,6 @@ int main ()
       return -1;
     }
 
-  while (frame < 16000)
-  {
-    int x, y;
     uint8_t *buffer;
     int width, height, stride;
 
@@ -24,17 +51,12 @@ int main ()
 
     buffer = mmm_get_buffer_write (fb, &width, &height, &stride, NULL);
 
-    for (y = 0; y < height; y++)
-    {
-      uint8_t *pixel = &buffer[y * stride];
-      for (x = 0; x < width; x++, pixel+=4)
-      {
-        pixel[0] = (int)((x * 255.0) / width );
-        pixel[1] = (int)((y * 255.0) / height );
-        pixel[2] = (int)((width-x) * 255.0 / width );
-        pixel[3] = 255;
-      }
-    }
+  int ret;
+  ret = pthread_create(&gs_guilite_pt, NULL, guilite_entry, buffer);
+  pthread_detach(&gs_guilite_pt);
+
+  while (1)
+  {
     mmm_write_done (fb, 0, 0, -1, -1);
     frame++;
 

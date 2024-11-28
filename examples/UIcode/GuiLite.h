@@ -3142,7 +3142,7 @@ private:
 	x = (x > high_limit) ? high_limit : x;\
 	x = (x < low_limit) ? low_limit : x;\
 }while(0)
-#define WAVE_CURSOR_WIDTH		8
+#define WAVE_CURSOR_WIDTH		1
 #define	WAVE_LINE_WIDTH			1
 #define	WAVE_MARGIN				5
 
