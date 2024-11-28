@@ -52,8 +52,7 @@ static char gs_name_wave[3][6] = {
 class c_myUI : public c_wnd
 {
 	virtual void on_init_children(void) {
-		// ((c_button*)get_wnd_ptr(ID_BUTTON))->set_on_click((WND_CALLBACK)&c_myUI::on_clicked);
-		// ((c_button*)get_wnd_ptr(ID_BUTTON))->set_attr((WND_ATTRIBUTION)0X0);
+		((c_button*)get_wnd_ptr(ID_BUTTON))->set_on_click((WND_CALLBACK)&c_myUI::on_clicked);
 
 		// c_wave_ctrl *p_wave = (c_wave_ctrl*)get_wnd_ptr(ID_WAVE1);
 		// // 配置 wave 的一些参数
@@ -117,7 +116,7 @@ class c_myUI : public c_wnd
 		switch (++index % 3)
 		{
 		case 0:
-			button->set_str("GuiLite");
+			button->set_str("Lite");
 			break;
 		case 1:
 			button->set_str("\xe2\x9d\xa4");
@@ -145,7 +144,7 @@ static WND_TREE s_myUI_children[] =
 	// {&s_wave1, ID_WAVE1, 0, 0, 0, 240, 90, NULL},
 	// {&s_wave2, ID_WAVE2, 0, 0, 95, 240, 90, NULL},
 	{&s_wave3, ID_WAVE3, 0, 90, 3, 586, 305, NULL},
-	// {&s_button, ID_BUTTON, "GuiLite", 60, 0, 0, 60, NULL},
+	{&s_button, ID_BUTTON, "Gui", 706, 373, 80, 35, NULL},
 	{ NULL,0,0,0,0,0,0 }
 };
 
@@ -226,6 +225,7 @@ void* getUiOfHelloWave(int* width, int* height, bool force_update)
     return s_display->get_updated_fb(width, height, false);
 }
 
+extern "C" \
 void sendTouch2HelloWave(int x, int y, bool is_down)
 {
 	is_down ? s_myUI.on_touch(x, y, TOUCH_DOWN) : s_myUI.on_touch(x, y, TOUCH_UP);

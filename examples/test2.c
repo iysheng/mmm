@@ -2,6 +2,7 @@
  */
 #include "mmm.h"
 #include <stdio.h>
+#include <stdbool.h>
 #include <signal.h>
 
 #include <stdlib.h>
@@ -17,12 +18,34 @@ void * guilite_entry(void *parg)
     return NULL;
 }
 
-void
-handler(int signo, siginfo_t *info, void *context)
+void handler(int signo, siginfo_t *info, void *context)
 {
     struct sigaction oldact;
 
     printf("signo=%d\n", signo);
+}
+
+enum
+{
+    EVENT_PUSH,
+    EVENT_RELEASE,
+};
+
+int convert_event2touch(char *buffer, int *x, int *y)
+{
+    int ret = -1;
+    if (buffer == strstr(buffer, "mouse-press"))
+    {
+        sscanf(buffer, "%*[a-z|-] %d %d", x, y);
+        ret = EVENT_PUSH;
+    }
+    else if (buffer == strstr(buffer, "mouse-release"))
+    {
+        sscanf(buffer, "%*[a-z|-] %d %d", x, y);
+        ret = EVENT_RELEASE;
+    }
+
+    return ret;
 }
 
 int main ()
@@ -56,6 +79,7 @@ int main ()
     ret = pthread_create(&gs_guilite_pt, NULL, guilite_entry, buffer);
     pthread_detach(&gs_guilite_pt);
 
+    int x, y;
     while (1)
     {
         mmm_write_done (fb, 0, 0, -1, -1);
@@ -64,7 +88,19 @@ int main ()
         while (mmm_has_event (fb))
         {
             const char *event = mmm_get_event (fb);
-            fprintf (stderr, "%s\n", event);
+            ret = convert_event2touch(event, &x, &y);
+            fprintf (stderr, "%s ret=%d x=%d y=%d\n", event, ret, x, y);
+            switch (ret)
+            {
+            case EVENT_PUSH:
+                sendTouch2HelloWave(x, y, true);
+                break;
+            case EVENT_RELEASE:
+                sendTouch2HelloWave(x, y, false);
+                break;
+            default:
+                break;
+            }
         }
     }
 
