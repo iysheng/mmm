@@ -13,35 +13,36 @@ extern void startHelloWave(void* phy_fb, int width, int height, int color_bytes)
 
 void * guilite_entry(void *parg)
 {
-  startHelloWave(parg, 800, 480, 4);
-  return NULL;
+    startHelloWave(parg, 800, 480, 4);
+    return NULL;
 }
 
-       void
-       handler(int signo, siginfo_t *info, void *context)
-       {
-           struct sigaction oldact;
+void
+handler(int signo, siginfo_t *info, void *context)
+{
+    struct sigaction oldact;
 
-           printf("signo=%d\n", signo);
-       }
+    printf("signo=%d\n", signo);
+}
 
 int main ()
 {
-  int frame = 1024;
-  Mmm *fb = mmm_new (800, 480, 0, NULL);
+    int frame = 1024;
+    Mmm *fb = mmm_new (800, 480, 0, NULL);
 
-           struct sigaction act = { 0 };
+    struct sigaction act = { 0 };
 
-           act.sa_flags = SA_SIGINFO;
-           act.sa_sigaction = &handler;
-           if (sigaction(SIGSEGV, &act, NULL) == -1) {
-               perror("sigaction");
-           }
-
-  if (!fb)
+    act.sa_flags = SA_SIGINFO;
+    act.sa_sigaction = &handler;
+    if (sigaction(SIGSEGV, &act, NULL) == -1)
     {
-      fprintf (stderr, "failed to open buffer\n");
-      return -1;
+        perror("sigaction");
+    }
+
+    if (!fb)
+    {
+        fprintf (stderr, "failed to open buffer\n");
+        return -1;
     }
 
     uint8_t *buffer;
@@ -51,22 +52,22 @@ int main ()
 
     buffer = mmm_get_buffer_write (fb, &width, &height, &stride, NULL);
 
-  int ret;
-  ret = pthread_create(&gs_guilite_pt, NULL, guilite_entry, buffer);
-  pthread_detach(&gs_guilite_pt);
+    int ret;
+    ret = pthread_create(&gs_guilite_pt, NULL, guilite_entry, buffer);
+    pthread_detach(&gs_guilite_pt);
 
-  while (1)
-  {
-    mmm_write_done (fb, 0, 0, -1, -1);
-    frame++;
-
-    while (mmm_has_event (fb))
+    while (1)
     {
-      const char *event = mmm_get_event (fb);
-      fprintf (stderr, "%s\n", event);
-    }
-  }
+        mmm_write_done (fb, 0, 0, -1, -1);
+        frame++;
 
-  mmm_destroy (fb);
-  return 0;
+        while (mmm_has_event (fb))
+        {
+            const char *event = mmm_get_event (fb);
+            fprintf (stderr, "%s\n", event);
+        }
+    }
+
+    mmm_destroy (fb);
+    return 0;
 }
