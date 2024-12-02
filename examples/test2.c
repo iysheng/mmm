@@ -11,6 +11,7 @@
 static pthread_t gs_guilite_pt;
 
 extern void startHelloWave(void* phy_fb, int width, int height, int color_bytes);
+extern void sendTouch2HelloWave(int x, int y, bool is_down);
 
 void * guilite_entry(void *parg)
 {
@@ -20,8 +21,6 @@ void * guilite_entry(void *parg)
 
 void handler(int signo, siginfo_t *info, void *context)
 {
-    struct sigaction oldact;
-
     printf("signo=%d\n", signo);
 }
 
@@ -31,7 +30,7 @@ enum
     EVENT_RELEASE,
 };
 
-int convert_event2touch(char *buffer, int *x, int *y)
+int convert_event2touch(const char *buffer, int *x, int *y)
 {
     int ret = -1;
     if (buffer == strstr(buffer, "mouse-press"))
@@ -77,7 +76,7 @@ int main ()
 
     int ret;
     ret = pthread_create(&gs_guilite_pt, NULL, guilite_entry, buffer);
-    pthread_detach(&gs_guilite_pt);
+    pthread_detach(gs_guilite_pt);
 
     int x, y;
     while (1)
